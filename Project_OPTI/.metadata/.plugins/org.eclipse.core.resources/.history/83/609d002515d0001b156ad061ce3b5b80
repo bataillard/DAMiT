@@ -85,12 +85,8 @@ subject to {
     /* sum of the demand that is delivered at all stores visited by vehicle v must be smaller than size of segment compartment in vehicle */
   }
   
-  forall (v in vehicle, s in segment, m in multiple ){
-    y[s][v][m] <= z[s][v];
-  }
-  
   forall (s in segment, i in store){
-  	sum (v in vehicle) del[i][s][v] == 1;    /* a specific segment is only delivered by 1 vehicle for every store to ensure no demand split */
+  	sum (v in vehicle) del[i][s][v] <= 1;    /* a specific segment is only delivered by 1 vehicle for every store to ensure no demand split */
   }  
   forall (v in vehicle, s in segment){
     sum (m in multiple) y[s][v][m]<=1;      /* for all vehicles, only one size/multiple should be selected for each segment */
@@ -102,16 +98,20 @@ subject to {
     sum (n in num_segment) g[n][v] <=1 ;   /* for every vehicle, only one possible number of segments can be used */
   }
   
-  forall (v in vehicle, p in store, s in segment){
-    sum (i in node) x[i][p+1][v] >= del[p][s][v]; /* si on deliver, on s'arrête*/
+  forall (v in vehicle, p in store, j in destination, s in segment){
+    sum (i in node) x[i][j][v] >= del[p][s][v];
   } 
   
-  forall(v in vehicle, s in segment, i in store) {
-    del [i][s][v] <= z [s][v];
+  forall(v in vehicle, s in segment) {
+    sum (i in store) del [i][s][v] >= z [s][v];
   }
   
   forall (i in node, j in node, v in vehicle, m in multiple, s in segment, p in store, n in num_segment){
-  /* all variables should be positive */
+    x[i][j][v]>=0;    /* all variables should be positive */
+	del[p][s][v]>=0;
+	y[s][v][m]>=0;
+	z[s][v]>=0;
+	g[n][v]>=0;
 	b[i][v]>=0;
   }
 }
