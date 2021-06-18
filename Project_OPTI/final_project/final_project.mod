@@ -36,8 +36,8 @@ dvar boolean g[num_segment][vehicle];  /* 1 if a vehicle carries a certain numbe
 
 /* Objective Function */
 minimize sum(v in vehicle) (sum (i in node, j in node) (x[i][j][v]*c[i][j]) + 
-		 sum (i in node, j in destination) x[i][j][v]*u + 
-		 sum (n in num_segment)(l[n]*g[n][v]));
+							sum (i in node, j in destination) x[i][j][v]*u + 
+							sum (n in num_segment)(l[n]*g[n][v]));
 /* minimize travel, unloading and loading costs */
 
 /* Constraints */
@@ -67,7 +67,7 @@ subject to {
   }
   
   forall (v in vehicle){
-    (sum (i in node, j in node) x[i][j][v]*t[i][j] + sum (i in node, j in destination, s in store) x[i][j][v]*ser[s]) <= T; 
+    (sum (i in node, j in node) x[i][j][v]*t[i][j] + sum (i in node, j in destination) x[i][j][v]*ser[j - 1]) <= T; 
     /* traveling and service time for all vehicles should be less than T */
   }
   
@@ -81,7 +81,7 @@ subject to {
   }
   
   forall (v in vehicle, s in segment) {
-    sum (i in store) del[i][s][v] * d[i][s] <= sum (m in multiple) y[v][s][m]*m*q_unit;  
+    sum (i in store) del[i][s][v] * d[i][s] <= sum (m in multiple) y[s][v][m]*m*q_unit;  
     /* sum of the demand that is delivered at all stores visited by vehicle v must be smaller than size of segment compartment in vehicle */
   }
   
@@ -90,7 +90,7 @@ subject to {
   }
   
   forall (s in segment, i in store){
-  	sum (v in vehicle) del[i][s][v] == 1;    /* a specific segment is only delivered by 1 vehicle for every store to ensure no demand split */
+  	sum (v in vehicle) del[i][s][v] == 1;    /* a specific segment demand is only delivered by 1 vehicle for every store to ensure no demand split */
   }  
   forall (v in vehicle, s in segment){
     sum (m in multiple) y[s][v][m]<=1;      /* for all vehicles, only one size/multiple should be selected for each segment */
@@ -103,14 +103,14 @@ subject to {
   }
   
   forall (v in vehicle, p in store, s in segment){
-    sum (i in node) x[i][p+1][v] >= del[p][s][v]; /* si on deliver, on s'arrête*/
+    sum (i in node) x[i][p+1][v] >= del[p][s][v]; /* if a vehicle does not visit a store, it cannot deliver to that store */
   } 
   
   forall(v in vehicle, s in segment, i in store) {
-    del [i][s][v] <= z [s][v];
+    del [i][s][v] <= z [s][v];     /* vehicle v cannot deliver segment s to a store if it does not carry that segment */
   }
   
-  forall (i in node, j in node, v in vehicle, m in multiple, s in segment, p in store, n in num_segment){
+  forall (i in node, v in vehicle){
   /* all variables should be positive */
 	b[i][v]>=0;
   }
