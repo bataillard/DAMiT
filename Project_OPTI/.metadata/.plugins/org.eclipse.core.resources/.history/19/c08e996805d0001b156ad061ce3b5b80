@@ -37,7 +37,7 @@ dvar int f[vehicle]; /* represent the number of stops for vehicle v
 
 /* Objective Function */
 minimize sum(v in vehicle) (sum (i in node, j in node) (x[i][j][v]*c[i][j]) + 
-		 sum (i in node, j in destination) f[v]*u + 
+		 sum (i in node, j in destination) x[i][j][v]*u + 
 		 sum (n in num_segment)(l[n]*g[n][v]));
 /* minimize travel, unloading and loading costs */
 
@@ -56,7 +56,7 @@ subject to {
   }
     
   forall (v in vehicle, i in node, j in destination) {
-    b[i][v] - b[j][v] + (N+1) * x[i][j][v] <= N ;           /* avoid subtour: a store can be visited once at most by each vehicle */
+    b[i][v] - b[j][v] + (N+2) * x[i][j][v] <= N+1 ;           /* avoid subtour: a store can be visited once at most by each vehicle */
   }  
   
   forall (v in vehicle){
@@ -75,13 +75,6 @@ subject to {
   forall (v in vehicle){
     sum (s in segment, m in multiple) y[s][v][m]*m*q_unit <= Q; 
     /* for all vehicles, what is transported should not exceed capacity Q */
-  }
-  
-  forall (m in multiple){
-    sum(v in vehicle, s in segment) y[s][v][m] ==1;
-  }
-  forall (v in vehicle, s in segment){
-    sum(m in segment) y[s][v][m] <= S*z[s][v];
   }
   
   forall (v in vehicle){
@@ -103,7 +96,7 @@ subject to {
   	sum (s in segment) z[s][v] == sum (n in num_segment) (n * g[n][v]);   /* for every vehicle, sum of segments */
   }
   forall (v in vehicle) {
-    sum (n in num_segment) g[n][v] <=1 ;   /* for every vehicle, only one possible number of segments can be used */
+    sum (n in num_segment) g[n][v] ==1 ;   /* for every vehicle, only one possible number of segments can be used */
   }
   
   forall (v in vehicle, p in store, j in destination, s in segment){
@@ -112,10 +105,6 @@ subject to {
   
   forall(v in vehicle, s in segment) {
     sum (i in store) del [i][s][v] >= z [s][v];
-  }
-  
-  forall(v in vehicle){
-    f[v] >= sum(i in node, j in destination) x[i][j][v];
   }
   
   forall (i in node, j in node, v in vehicle, m in multiple, s in segment, p in store, n in num_segment){

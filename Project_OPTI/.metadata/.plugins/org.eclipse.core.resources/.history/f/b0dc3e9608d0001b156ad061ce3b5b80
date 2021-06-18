@@ -77,13 +77,6 @@ subject to {
     /* for all vehicles, what is transported should not exceed capacity Q */
   }
   
-  forall (m in multiple){
-    sum(v in vehicle, s in segment) y[s][v][m] ==1;
-  }
-  forall (v in vehicle, s in segment){
-    sum(m in segment) y[s][v][m] <= S*z[s][v];
-  }
-  
   forall (v in vehicle){
     sum (m in multiple, s in segment) y[s][v][m]>=1; /*for all vehicles,  at least one segment should be transported*/
   }
