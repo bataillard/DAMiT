@@ -1,9 +1,8 @@
 /*********************************************
- * OPL 12.10.0.0 Model
- * Author: Gaelle AbiYounes
- * Creation Date: Jun 14, 2021 at 2:25:14 PM
+ * OPL 20.1.0.0 Model
+ * Author: Florent
+ * Creation Date: 17 juin 2021 at 09:12:45
  *********************************************/
-
 /* Define sets and parameters */
 int N = ...;
 int V= ...;
@@ -110,9 +109,3 @@ subject to {
 	b[i][v]>=0;
   }
 }
-
-
-
-
-
-
