@@ -80,8 +80,8 @@ subject to {
     sum (m in multiple, s in segment) y[s][v][m]>=1; /*for all vehicles,  at least one segment should be transported*/
   }
   
-  forall (v in vehicle, s in segment) {
-    sum (i in store) del[i][s][v] * d[i][s] <= sum (m in multiple) y[v][s][m]*m*q_unit;  
+  forall (i in store, s in segment) {
+    sum (v in vehicle) del[i][s][v] * d[i][s] <= sum (m in multiple, v in vehicle) y[v][s][m]*m*q_unit;  
     /* sum of the demand that is delivered at all stores visited by vehicle v must be smaller than size of segment compartment in vehicle */
   }
   
@@ -90,7 +90,7 @@ subject to {
   }
   
   forall (s in segment, i in store){
-  	sum (v in vehicle) del[i][s][v] == 1;    /* a specific segment is only delivered by 1 vehicle for every store to ensure no demand split */
+  	sum (v in vehicle) del[i][s][v] <= 1;    /* a specific segment is only delivered by 1 vehicle for every store to ensure no demand split */
   }  
   forall (v in vehicle, s in segment){
     sum (m in multiple) y[s][v][m]<=1;      /* for all vehicles, only one size/multiple should be selected for each segment */

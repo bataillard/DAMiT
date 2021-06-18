@@ -89,8 +89,10 @@ subject to {
     y[s][v][m] <= z[s][v];
   }
   
+  /*ajoute contraintes reliant z a y*/
+  
   forall (s in segment, i in store){
-  	sum (v in vehicle) del[i][s][v] == 1;    /* a specific segment is only delivered by 1 vehicle for every store to ensure no demand split */
+  	sum (v in vehicle) del[i][s][v] <= 1;    /* a specific segment is only delivered by 1 vehicle for every store to ensure no demand split */
   }  
   forall (v in vehicle, s in segment){
     sum (m in multiple) y[s][v][m]<=1;      /* for all vehicles, only one size/multiple should be selected for each segment */

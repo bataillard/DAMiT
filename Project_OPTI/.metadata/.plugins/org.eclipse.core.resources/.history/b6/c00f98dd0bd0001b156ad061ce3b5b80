@@ -27,16 +27,17 @@ int d[store][segment]=...;
 int ser[store]=...;
 
 /* Define Decision Variables */
-dvar boolean x[node][node][vehicle];    /* is equal to 1 if a vehicle v travels from node i to j, 0 otherwise */
-dvar boolean del[store][segment][vehicle];   /* is equal to 1 if a segment is delivered by vehicle v to store i, 0 otherwise */
-dvar boolean y[segment][vehicle][multiple];  /* is equal to 1 if size m is selected for segment s in vehicle v, 0 otherwise*/
+dvar int x[node][node][vehicle];    /* is equal to 1 if a vehicle v travels from node i to j, 0 otherwise */
+dvar int del[store][segment][vehicle];   /* is equal to 1 if a segment is delivered by vehicle v to store i, 0 otherwise */
+dvar int y[segment][vehicle][multiple];  /* is equal to 1 if size m is selected for segment s in vehicle v, 0 otherwise*/
 dvar int b[node][vehicle];   /* holds the position of stores to be visited */
-dvar boolean z[segment][vehicle]; /* 1 if segment s is loaded in vehicle v, 0 otherwise */
-dvar boolean g[num_segment][vehicle];  /* 1 if a vehicle carries a certain number of segments, 0 otherwise */
+dvar int z[segment][vehicle]; /* 1 if segment s is loaded in vehicle v, 0 otherwise */
+dvar int g[num_segment][vehicle];  /* 1 if a vehicle carries a certain number of segments, 0 otherwise */
+dvar int f[vehicle]; /* represent the number of stops for vehicle v
 
 /* Objective Function */
 minimize sum(v in vehicle) (sum (i in node, j in node) (x[i][j][v]*c[i][j]) + 
-		 sum (i in node, j in destination) x[i][j][v]*u + 
+		 sum (i in node, j in destination) f[v]*u + 
 		 sum (n in num_segment)(l[n]*g[n][v]));
 /* minimize travel, unloading and loading costs */
 
@@ -62,9 +63,6 @@ subject to {
     b[1][v] == 1;                                    /* start at warehouse */
   }  
     
-  forall (v in vehicle, h in node) {
-    sum (i in node) x[i][h][v] == sum (j in node) x[h][j][v] ;   /* at every node, inflow = outflow. all vehicles that enter a node have to leave it */
-  }
   
   forall (v in vehicle){
     (sum (i in node, j in node) x[i][j][v]*t[i][j] + sum (i in node, j in destination, s in store) x[i][j][v]*ser[s]) <= T; 
@@ -76,6 +74,10 @@ subject to {
     /* for all vehicles, what is transported should not exceed capacity Q */
   }
   
+  forall (v in vehicle, s in segment){
+    sum(m in segment) y[s][v][m] <= S*z[s][v];
+  }
+  
   forall (v in vehicle){
     sum (m in multiple, s in segment) y[s][v][m]>=1; /*for all vehicles,  at least one segment should be transported*/
   }
@@ -85,12 +87,8 @@ subject to {
     /* sum of the demand that is delivered at all stores visited by vehicle v must be smaller than size of segment compartment in vehicle */
   }
   
-  forall (v in vehicle, s in segment, m in multiple ){
-    y[s][v][m] <= z[s][v];
-  }
-  
   forall (s in segment, i in store){
-  	sum (v in vehicle) del[i][s][v] == 1;    /* a specific segment is only delivered by 1 vehicle for every store to ensure no demand split */
+  	sum (v in vehicle) del[i][s][v] <= 1;    /* a specific segment is only delivered by 1 vehicle for every store to ensure no demand split */
   }  
   forall (v in vehicle, s in segment){
     sum (m in multiple) y[s][v][m]<=1;      /* for all vehicles, only one size/multiple should be selected for each segment */
@@ -102,16 +100,24 @@ subject to {
     sum (n in num_segment) g[n][v] <=1 ;   /* for every vehicle, only one possible number of segments can be used */
   }
   
-  forall (v in vehicle, p in store, s in segment){
-    sum (i in node) x[i][p+1][v] >= del[p][s][v]; /* si on deliver, on s'arrête*/
+  forall (v in vehicle, p in store, j in destination, s in segment){
+    sum (i in node) x[i][j][v] >= del[p][s][v];
   } 
   
-  forall(v in vehicle, s in segment, i in store) {
-    del [i][s][v] <= z [s][v];
+  forall(v in vehicle, s in segment) {
+    sum (i in store) del [i][s][v] >= z [s][v];
+  }
+  
+  forall(v in vehicle){
+    f[v] >= sum(i in node, j in destination) x[i][j][v];
   }
   
   forall (i in node, j in node, v in vehicle, m in multiple, s in segment, p in store, n in num_segment){
-  /* all variables should be positive */
+    x[i][j][v]>=0;    /* all variables should be positive */
+	del[p][s][v]>=0;
+	y[s][v][m]>=0;
+	z[s][v]>=0;
+	g[n][v]>=0;
 	b[i][v]>=0;
   }
 }
