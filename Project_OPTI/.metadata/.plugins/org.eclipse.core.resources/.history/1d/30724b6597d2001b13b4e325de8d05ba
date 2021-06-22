@@ -55,17 +55,13 @@ subject to {
   }
     
   forall (v in vehicle, i in node, j in destination) {
-    b[i][v] - b[j][v] + (N+1) * x[i][j][v] <= N ;           /* avoid subtour: a store can be visited once at most by each vehicle */
-  }
-     
-  forall (v in vehicle, j in destination) {
-    b[j][v] <= sum (i in node) x[i][j][v]*(N+1);           /* if you don't go throug a store, it's 0 in b */
+    b[i][v] - b[j][v] + (N+1) * x[i][j][v] <= N-0.1 ;           /* avoid subtour: a store can be visited once at most by each vehicle */
   }
   
   forall (v in vehicle){
     b[1][v] == 1;                                    /* start at warehouse */
-  }  
-  
+  }   
+      
   forall (v in vehicle, h in node) {
     sum (i in node) x[i][h][v] == sum (j in node) x[h][j][v] ;   /* at every node, inflow = outflow. all vehicles that enter a node have to leave it */
   }
